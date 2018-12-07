@@ -73,12 +73,19 @@ if (! RTC.isrunning()) // se verifica si el modulo rtc esta en funcionamiento, d
 {
 //lcd.println("RTC is NOT running!");
 //delay(10000);
-
 }
-RTC.adjust(DateTime(F_Anio,F_Mes,F_Dia,F_Hora,F_Min,F_Sec)); //esta funcion establecera en el modulo la fecha de creación del archivo .hex generado al compilar el sketch
-    // This line sets the RTC with an explicit date & time, for example to set
-    // January 21, 2014 at 3am you would call:
-    // rtc.adjust(DateTime(2014, 1, 21, 3, 0, 0));
+DateTime now = RTC.now(); //obtiene datos del modulo RTC
+F_Anio=now.year();
+F_Mes=now.month();
+F_Dia=now.day();
+F_Hora=now.hour();
+F_Min=now.minute();
+F_Sec=now.second();
+
+//RTC.adjust(DateTime(F_Anio,F_Mes,F_Dia,F_Hora,F_Min,F_Sec)); //esta funcion establecera en el modulo la fecha de creación del archivo .hex generado al compilar el sketch
+//    // This line sets the RTC with an explicit date & time, for example to set
+//    // January 21, 2014 at 3am you would call:
+//    // rtc.adjust(DateTime(2014, 1, 21, 3, 0, 0));
 
 ///################################################################################################################################
 
@@ -461,9 +468,46 @@ void LcdMenuConfiguracionSalidas()
 }
 void LcdMenuConfiguracionTiempo()
 {
+  DateTime now = RTC.now();
+  
+lcd.setCursor(1,0); 
+lcd.print("Fecha:");  
+lcd.setCursor(7,0);
+  if(now.day() < 10)
+  {
+  lcd.print("0");
+  }
+  lcd.print(now.day(), DEC); //imprime dia
+  lcd.print('/');
+  if(now.month() < 10)
+  {
+  lcd.print("0");
+  }
+lcd.print(now.month(), DEC); //imprime mes
+lcd.print('/');
+lcd.print(now.year(), DEC);  //imprime el año
 
-  lcd.setCursor(1, 0); lcd.print("Fecha:");
-  lcd.setCursor(1, 1); lcd.print("Hora:");
+  lcd.setCursor(1, 1); 
+  lcd.print("Hora:");
+  lcd.setCursor(6, 1); 
+ if(now.hour() < 10)
+ {
+ lcd.print("0");
+ }
+ lcd.print(now.hour(), DEC); //imprime hora
+lcd.print(':');
+ if(now.minute() < 10)
+ {
+ lcd.print("0");
+ }
+lcd.print(now.minute(), DEC); //imprime minutos
+lcd.print(':');
+ if(now.second() < 10)
+ {
+ lcd.print("0");
+ }
+lcd.print(now.second(), DEC); 
+  
   lcd.setCursor(1, 2); lcd.print("Ciclo:");
   lcd.setCursor(1, 3); lcd.print("Volver <<");
 }
@@ -509,7 +553,7 @@ void PinB(){
 
 
 
-/////////////////////############ FUNCIONES DE CONFIGURACION DE TIEMPO #################################//////////////////////////////////7
+/////////////////////##################### FUNCIONES DE CONFIGURACION DE TIEMPO #################################//////////////////////////////////7
 
 
 void Fecha(){
@@ -544,14 +588,14 @@ controlButtonState();
 controlescapeState();
 }//end while
 escapePressed=0;
-//delay(5000);
+RTC.adjust(DateTime(F_Anio,F_Mes,F_Dia,F_Hora,F_Min,F_Sec));
 lcd.clear();
 Mode=3;
   
  }//end function
 
  void Hora(){
- 
+ boolean ok=false;
  mostrarHora();
 
 while (escapePressed==0){
@@ -561,18 +605,20 @@ editarHora();
 controlMovEncoder();
 
 if (buttonPressed == 1 && fila == 1){
-   
+    ok=true;
   //llamar funcion que incrementa Hora en display y setea en RTC
   incHora();
   buttonPressed = 0;
 }//end if
 
 else if ( buttonPressed == 1  && fila == 2 ){
+     ok=true;
   //llamar funcion que incrementa Minutos en display y setea en RTC  
   incMin();
   buttonPressed = 0;
   }
 else if ( buttonPressed == 1  && fila == 3 ){  
+    ok=true;
 //llamar funcion que incrementa Segundos en display y setea en RTC
 incSec();
 buttonPressed = 0;
@@ -582,7 +628,8 @@ controlButtonState();
 controlescapeState();
 }//end while
 escapePressed=0;
-//delay(5000);
+if(ok){RTC.adjust(DateTime(F_Anio,F_Mes,F_Dia,F_Hora,F_Min,F_Sec));}
+
 lcd.clear();
 Mode=3; 
  }//end function
@@ -615,6 +662,7 @@ else if ( incDia >= 156 && incDia < 187){incDia=incDia-155;}
   controlescapeState();
   }//end while
  escapePressed=0;
+
 }
 
   void incMes(){  
@@ -769,7 +817,7 @@ lcd.print(F_Sec);
 
 void mostrarFecha() //Funcion que lee los datos de modulo RTC y despues los imprime en el display
 {
-RTC.adjust(DateTime(F_Anio,F_Mes,F_Dia,F_Hora,F_Min,F_Sec));	
+//RTC.adjust(DateTime(F_Anio,F_Mes,F_Dia,F_Hora,F_Min,F_Sec));	
 DateTime now = RTC.now(); //obtiene datos del modulo RTC
 lcd.clear();
 lcd.setCursor(1,0);
@@ -792,9 +840,7 @@ lcd.print(now.year(), DEC);  //imprime el año
 
 }
 
-void mostrarHora(){
-	
-RTC.adjust(DateTime(F_Anio,F_Mes,F_Dia,F_Hora,F_Min,F_Sec));	
+void mostrarHora(){		
 DateTime now = RTC.now(); //obtiene datos del modulo RTC
 lcd.clear();
 lcd.setCursor(1,0);
@@ -802,7 +848,6 @@ lcd.setCursor(1,0);
  {
  lcd.print("0");
  }
- // Pasamos a la linea de abajo
 lcd.setCursor(1,0);  
 lcd.print(now.hour(), DEC); //imprime hora
 lcd.print(':');
